@@ -4154,5 +4154,33 @@ ${state.ghostPings.slice(-10).map((gp, i) => (i + 1) + '. <@' + gp.author + '> �
     } else {
         window.addEventListener('load', () => setTimeout(init, 2000));
     }
+  /* ═══════════════════════════════════════════════════════════════════════
+   EMERGENCY UNHIDE — Triple Tap Anywhere (iOS/Stay)
+   ═══════════════════════════════════════════════════════════════════════ */
+
+(function initEmergencyUnhide() {
+    let tapCount = 0;
+    let lastTap = 0;
+
+    document.addEventListener('touchend', (e) => {
+        const now = Date.now();
+        if (now - lastTap > 400) tapCount = 0;
+        tapCount++;
+        lastTap = now;
+
+        if (tapCount >= 3) {
+            tapCount = 0;
+            // Force watermark visible
+            WatermarkCfg.hidden = false;
+            WatermarkCfg.enabled = true;
+            WatermarkCfg.miniMode = false;
+            Settings.save('watermark', WatermarkCfg);
+            buildWatermark();
+            showToast('🔓 Watermark restored!', 'success', 3000);
+        }
+    }, { passive: true, capture: true });
+
+    console.log('[CC-Elite] Emergency triple-tap unhide active');
+})();
 
 })();
