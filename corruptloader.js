@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         DiscordCorruptControl - ELITE EDITION v5
+// @name         DiscordCorruptControl - ELITE EDITION v2.0.5
 // @author       @ogunworthy
 // @version      2.0.5
 // @match        https://*discord.com/*
