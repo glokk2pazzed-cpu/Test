@@ -313,10 +313,10 @@ COMPLETE REWRITE - The Definitive Edition
         enabled: false,
         interval: 30000,
         messages: [
-            { text: 'CorruptControl ELITE v5', emoji: '\uD83D\uDD25' },
-            { text: 'discord.gg/corrupt', emoji: '\uD83D\uDC7B' },
+            { text: 'CorruptControl BETA v2.0.5', emoji: '\uD83D\uDD25' },
+            { text: 'discord.gg/https://discord.gg/kdasX7hyY8', emoji: '\uD83D\uDC7B' },
             { text: 'Made by @ogunworthy', emoji: '\u2B50' },
-            { text: 'ELITE MODE — 350+ CMDS', emoji: '\u26A1' },
+            { text: 'BETA MODE — 350+ CMDS', emoji: '\u26A1' },
             { text: 'Type .help for commands', emoji: '\uD83C\uDFAF' }
         ]
     });
