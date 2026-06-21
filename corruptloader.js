@@ -313,10 +313,10 @@ COMPLETE REWRITE - The Definitive Edition
         interval: 30000,
         messages: [
             { text: 'CorruptControl BETA v2.0.5', emoji: '\uD83D\uDD25' },
-            { text: 'discord.gg/https://discord.gg/kdasX7hyY8', emoji: '\uD83D\uDC7B' },
+            { text: 'https://discord.gg/kdasX7hyY8', emoji: '\uD83D\uDC7B' },
             { text: 'Made by @ogunworthy', emoji: '\u2B50' },
-            { text: 'BETA MODE — 350+ CMDS', emoji: '\u26A1' },
-            { text: 'Type .help for commands', emoji: '\uD83C\uDFAF' }
+            { text: 'IOS DISCORD SB/Menu - 600+ CMDS', emoji: '\u26A1' },
+            { text: 'Beta OP', emoji: '\uD83C\uDFAF' }
         ]
     });
 
