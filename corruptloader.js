@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         DiscordCorruptControl - ELITE EDITION v2.0.5
+// @name         DiscordCorruptControl - 2.0.5
 // @version      2.0.5
 // @author       @ogunworthy
-// @description  Elite control script for Discord web platform.
+// @description  2nd Loader Script
 // @match        https://discord.com/*
 // @connect      raw.githubusercontent.com
 // @grant        GM_xmlhttpRequest
