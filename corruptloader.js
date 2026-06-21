@@ -1,13 +1,9 @@
 // ==UserScript==
 // @name         DiscordCorruptControl - ELITE EDITION v2.0.5
-// @namespace    https://github.com
 // @version      2.0.5
 // @author       @ogunworthy
 // @description  Elite control script for Discord web platform.
-// @match        https://*://*
-// @match        https://discord.com*
-// @updateURL    https://raw.githubusercontent.com/glokk2pazzed-cpu/corruptcontrol/refs/heads/main/corruptcontrol-elite-v5.js
-// @downloadURL  https://raw.githubusercontent.com/glokk2pazzed-cpu/corruptcontrol/refs/heads/main/corruptcontrol-elite-v5.js
+// @match        https://discord.com/*
 // @connect      raw.githubusercontent.com
 // @grant        GM_xmlhttpRequest
 // @grant        GM_getValue
