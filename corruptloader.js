@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         DiscordCorruptControl - 2.0.5
+// @name         DiscordCorruptControl - 2.0.6
 // @version      2.0.5
 // @author       @ogunworthy
 // @description  2nd Loader Script
@@ -45,53 +45,81 @@ COMPLETE REWRITE - The Definitive Edition
     'use strict';
 
     /* ═══════════════════════════════════════════════════════════════════════
-       SECTION 0: EXTERNAL SCRIPT LOADER (v2.0.4 Style — Preserved)
+       SECTION 0: EXTERNAL SCRIPT LOADER (v2.0.6 — Hardened)
        ═══════════════════════════════════════════════════════════════════════ */
 
     const BETA_LOADER_URL = 'https://raw.githubusercontent.com/glokk2pazzed-cpu/corruptcontrol/refs/heads/main/corrupt.beta.js';
-    const TOGGLE_IMG_URL = 'https://raw.githubusercontent.com/glokk2pazzed-cpu/Justin/refs/heads/main/toggle.js';
+    const TOGGLE_IMG_URL = (typeof GM_getValue === 'function' && GM_getValue('CC_TOGGLE_IMG', null))
+        || 'https://raw.githubusercontent.com/glokk2pazzed-cpu/Justin/refs/heads/main/toggle.js';
+    const FALLBACK_IMG = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="65" height="65" viewBox="0 0 65 65">' +
+        '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">' +
+        '<stop offset="0" stop-color="#667eea"/><stop offset="1" stop-color="#764ba2"/></linearGradient></defs>' +
+        '<circle cx="32.5" cy="32.5" r="30" fill="url(#g)"/>' +
+        '<text x="32.5" y="44" font-size="32" text-anchor="middle" fill="#fff" font-family="sans-serif">CC</text></svg>'
+    );
     let TOGGLE_IMG_SRC = null;
     let betaScriptLoaded = false;
 
-    function fetchImageData(callback) {
-        fetch(TOGGLE_IMG_URL)
-            .then(r => r.text())
-            .then(data => {
-                TOGGLE_IMG_SRC = data.trim();
-                console.log('[CC-Elite] Toggle image data fetched');
-                if (callback) callback();
-            })
-            .catch(err => {
-                console.error('[CC-Elite] Toggle image fetch failed:', err);
-                TOGGLE_IMG_SRC = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="65" height="65"><text y="50" font-size="40">!</text></svg>';
-                if (callback) callback();
-            });
+    function looksLikeImage(v) {
+        if (!v) return false; v = v.trim();
+        return /^data:image\//i.test(v) || /^https?:\/\/\S+\.(png|jpe?g|gif|svg|webp|bmp|avif)(\?|#|$)/i.test(v);
+    }
+
+    function fetchImageData(cb) {
+        if (looksLikeImage(TOGGLE_IMG_URL)) { TOGGLE_IMG_SRC = TOGGLE_IMG_URL.trim(); return cb && cb(); }
+        const done = (src) => { TOGGLE_IMG_SRC = src; cb && cb(); };
+        const attempt = (n) => {
+            fetch(TOGGLE_IMG_URL, { cache: 'no-store' })
+                .then(r => r.ok ? r.text() : Promise.reject('HTTP ' + r.status))
+                .then(txt => {
+                    txt = (txt || '').trim();
+                    if (looksLikeImage(txt)) return done(txt);
+                    if (/^[A-Za-z0-9+/=]{64,}$/.test(txt)) return done('data:image/png;base64,' + txt);
+                    return done(FALLBACK_IMG);
+                })
+                .catch(err => {
+                    console.warn('[CC-Elite] toggle img fetch fail (' + n + '):', err);
+                    if (n < 3) return setTimeout(() => attempt(n + 1), 800 * n);
+                    done(FALLBACK_IMG);
+                });
+        };
+        attempt(1);
+    }
+
+    function applyImg(el) {
+        try {
+            while (el.firstChild) el.removeChild(el.firstChild);
+            el.style.background = 'transparent';
+            el.style.border = 'none';
+            el.style.boxShadow = 'none';
+            el.style.color = 'transparent';
+            const img = document.createElement('img');
+            img.src = TOGGLE_IMG_SRC || FALLBACK_IMG;
+            img.alt = ''; img.decoding = 'async'; img.referrerPolicy = 'no-referrer'; img.draggable = false;
+            img.style.cssText = 'width:65px;height:65px;object-fit:contain;pointer-events:none;display:block;background:transparent;border-radius:50%;';
+            img.onerror = () => { img.onerror = null; img.src = FALLBACK_IMG; };
+            el.appendChild(img);
+            el.dataset.ccToggled = '1';
+            return true;
+        } catch (e) { return false; }
     }
 
     function patchToggleInDOM() {
         if (!TOGGLE_IMG_SRC) return false;
-        const allElements = document.querySelectorAll('*');
-        for (const el of allElements) {
+        const candidates = document.querySelectorAll('div, button');
+        for (const el of candidates) {
+            if (el.dataset && el.dataset.ccToggled === '1') continue;
             try {
                 const style = window.getComputedStyle(el);
-                const isFixed = style.position === 'fixed';
-                const hasWarning = el.childNodes.length === 1 &&
-                    el.childNodes[0].nodeType === Node.TEXT_NODE &&
-                    el.childNodes[0].textContent.trim().replace(/\uFE0F/g, '') === '!';
-                if (isFixed && hasWarning) {
-                    el.innerHTML = '';
-                    el.style.background = 'transparent';
-                    el.style.border = 'none';
-                    el.style.boxShadow = 'none';
-                    const img = document.createElement('img');
-                    img.src = TOGGLE_IMG_SRC;
-                    img.style.cssText = 'width:65px;height:65px;object-fit:contain;pointer-events:none;display:block;background:transparent;';
-                    img.draggable = false;
-                    el.appendChild(img);
-                    console.log('[CC-Elite] Toggle patched via DOM observer');
-                    return true;
+                if (style.position !== 'fixed') continue;
+                const w = parseFloat(style.width), h = parseFloat(style.height);
+                if (!(w >= 40 && w <= 90 && h >= 40 && h <= 90)) continue;
+                const txt = (el.textContent || '').trim().replace(/[\uFE0F\u200D]/g, '');
+                if (txt === '\u26A0' || txt === '!' || el.id === 'cc-toggle' || el.id === 'corruptToggle') {
+                    if (applyImg(el)) return true;
                 }
-            } catch (e) { }
+            } catch (_) {}
         }
         return false;
     }
@@ -100,57 +128,35 @@ COMPLETE REWRITE - The Definitive Edition
     function watchForToggle() {
         if (patchToggleInDOM()) return;
         if (domObserver) return;
-        domObserver = new MutationObserver(() => {
-            if (patchToggleInDOM()) {
-                domObserver.disconnect();
-                domObserver = null;
-            }
-        });
-        const appMount = document.querySelector('#app-mount');
-        if (appMount) domObserver.observe(appMount, { childList: true, subtree: true });
+        domObserver = new MutationObserver(() => { patchToggleInDOM(); });
+        const root = document.querySelector('#app-mount') || document.body;
+        if (root) domObserver.observe(root, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
+        setInterval(patchToggleInDOM, 4000);
     }
 
     function patchCode(code) {
-        if (!TOGGLE_IMG_SRC) { console.warn('[CC-Elite] Image data not loaded yet'); return code; }
-        const REPLACEMENT = "\n" +
-            "toggle.innerHTML = '';\n" +
-            "toggle.style.background = 'transparent';\n" +
-            "toggle.style.border = 'none';\n" +
-            "toggle.style.boxShadow = 'none';\n" +
-            "(function(){\n" +
-            "    const _img = document.createElement('img');\n" +
-            "    _img.src = '" + TOGGLE_IMG_SRC + "';\n" +
-            "    _img.draggable = false;\n" +
-            "    _img.style.cssText = 'width:65px;height:65px;object-fit:contain;pointer-events:none;display:block;background:transparent;';\n" +
-            "    toggle.appendChild(_img);\n" +
-            "})();";
-        const pattern = /toggle\.innerHTML\s*=\s*['"][^\s'"]{1,3}['"];?/g;
-        const patched = code.replace(pattern, REPLACEMENT);
-        if (patched !== code) { console.log('[CC-Elite] Toggle patched at code level'); return patched; }
-        console.warn('[CC-Elite] Code pattern not matched — will try DOM observer');
-        return code;
+        if (!TOGGLE_IMG_SRC) return code;
+        const SAFE = TOGGLE_IMG_SRC.replace(/['\\]/g, m => '\\' + m);
+        const REPLACEMENT =
+            "toggle.innerHTML='';toggle.style.background='transparent';toggle.style.border='none';toggle.style.boxShadow='none';" +
+            "(function(){try{var _img=document.createElement('img');_img.src='" + SAFE + "';_img.draggable=false;" +
+            "_img.style.cssText='width:65px;height:65px;object-fit:contain;pointer-events:none;display:block;background:transparent;border-radius:50%;';" +
+            "toggle.appendChild(_img);}catch(e){}})();";
+        const pattern = /toggle\.innerHTML\s*=\s*['"][^'"\n]{1,4}['"]\s*;?/g;
+        return code.replace(pattern, REPLACEMENT);
     }
 
     function loadMainScript() {
         if (betaScriptLoaded) return;
         betaScriptLoaded = true;
-        console.log('[CC-BETA] Loading external beta script from:', BETA_LOADER_URL);
-        fetch(BETA_LOADER_URL)
-            .then(r => r.text())
+        fetch(BETA_LOADER_URL + '?t=' + Date.now(), { cache: 'no-store' })
+            .then(r => r.ok ? r.text() : Promise.reject('HTTP ' + r.status))
             .then(code => {
                 const patched = patchCode(code);
-                try {
-                    eval(patched);
-                    console.log('[CC-BETA] External beta script loaded successfully');
-                } catch (e) {
-                    console.error('[CC-BETA] Beta script eval failed:', e);
-                }
-                if (patched === code) watchForToggle();
+                try { (0, eval)(patched); } catch (e) { console.error('[CC-BETA] eval failed:', e); }
+                watchForToggle();
             })
-            .catch(err => {
-                console.error('[CC-BETA] Failed to load beta script:', err);
-                betaScriptLoaded = false;
-            });
+            .catch(err => { console.error('[CC-BETA] fetch failed:', err); betaScriptLoaded = false; });
     }
 
     /* ═══════════════════════════════════════════════════════════════════════
@@ -4008,23 +4014,80 @@ ${state.ghostPings.slice(-10).map((gp, i) => (i + 1) + '. <@' + gp.author + '> �
         }, { passive: true });
 
         if ($.isIOS()) {
+            try {
+                const style = document.createElement('style');
+                style.id = 'cc-ios-lock';
+                style.textContent = [
+                    'html,body{overscroll-behavior:none !important;-webkit-overflow-scrolling:auto !important;}',
+                    'html{position:fixed;width:100%;height:100%;overflow:hidden;}',
+                    'body{position:relative;width:100%;height:100%;overflow:hidden;touch-action:manipulation;}',
+                    '#app-mount{height:100% !important;overflow:hidden;}',
+                    '#cc-panel,#cc-settings-panel,#cc-watermark{touch-action:pan-y;-webkit-overflow-scrolling:touch;}'
+                ].join('\n');
+                document.documentElement.appendChild(style);
+            } catch (_) {}
+
+            const SCROLLABLE = 'main,[class*="scrollerBase"],[class*="messagesWrapper"],[class*="chat-"],#cc-panel,#cc-settings-panel,[data-cc-scroll="1"],textarea,input,[contenteditable="true"]';
             document.addEventListener('touchmove', (e) => {
-                if (e.target?.closest?.('#cc-watermark, #cc-panel, #cc-settings-panel')) e.stopPropagation();
+                const t = e.target;
+                if (!t || !t.closest) return;
+                if (t.closest(SCROLLABLE)) return;
+                if (e.cancelable) e.preventDefault();
+            }, { passive: false, capture: true });
+
+            document.addEventListener('touchmove', (e) => {
+                if (e.target?.closest?.('#cc-watermark,#cc-panel,#cc-settings-panel')) e.stopPropagation();
             }, { passive: true });
 
+            let savedScrollTop = 0;
+            window.addEventListener('focusin', (e) => {
+                const t = e.target;
+                if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) {
+                    const sc = document.querySelector('[class*="scrollerBase"]');
+                    savedScrollTop = sc ? sc.scrollTop : 0;
+                }
+            });
+            window.addEventListener('focusout', () => {
+                requestAnimationFrame(() => {
+                    const sc = document.querySelector('[class*="scrollerBase"]');
+                    if (sc) sc.scrollTop = savedScrollTop;
+                    window.scrollTo(0, 0);
+                });
+            });
+
             const fixVH = () => {
-                const vh = window.innerHeight * 0.01;
+                const vh = (window.visualViewport ? window.visualViewport.height : window.innerHeight) * 0.01;
                 document.documentElement.style.setProperty('--cc-vh', vh + 'px');
             };
             window.addEventListener('resize', fixVH, { passive: true });
+            window.addEventListener('orientationchange', fixVH, { passive: true });
+            if (window.visualViewport) window.visualViewport.addEventListener('resize', fixVH, { passive: true });
             fixVH();
+
+            let lastTap = 0;
+            document.addEventListener('touchend', (e) => {
+                if (!e.target?.closest?.('#cc-panel,#cc-settings-panel,#cc-watermark')) return;
+                const now = Date.now();
+                if (now - lastTap < 350 && e.cancelable) e.preventDefault();
+                lastTap = now;
+            }, { passive: false });
         }
 
         document.addEventListener('mousedown', (e) => {
             if (e.target?.closest?.('#cc-watermark')) e.preventDefault();
         }, { passive: true });
 
-        console.log('[CC-Elite] Scroll stability active' + ($.isIOS() ? ' (iOS mode)' : $.isMobile() ? ' (mobile mode)' : ''));
+        window.addEventListener('error', (e) => {
+            if (e?.message && /cc-|CC-Elite|corrupt/i.test(e.message)) {
+                console.warn('[CC-Elite] caught:', e.message);
+                e.preventDefault?.();
+            }
+        });
+        window.addEventListener('unhandledrejection', (e) => {
+            if (String(e.reason || '').match(/cc-|CC-Elite|corrupt/i)) e.preventDefault?.();
+        });
+
+        console.log('[CC-Elite] Scroll stability active' + ($.isIOS() ? ' (iOS hardened)' : $.isMobile() ? ' (mobile)' : ''));
     }
 
     /* ═══════════════════════════════════════════════════════════════════════
