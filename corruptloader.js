@@ -12,8 +12,8 @@
 // @run-at       document-start
 // ==/UserScript== 
 /*
-CHANGELOG - CorruptControl ELITE v2.0.5
-=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=
+CHANGELOG - CorruptControl ELITE v2.0.6
+=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*==*=*=*=*=*=*=*=*=*=
 COMPLETE REWRITE - The Definitive Edition
   [+] TOTAL COMMAND SYSTEM OVERHAUL — Discord React-native input detection
   [+] 350+ COMMANDS — fully sorted by category with intelligent aliases
@@ -163,8 +163,8 @@ COMPLETE REWRITE - The Definitive Edition
        SECTION 1: CONFIGURATION ENGINE
        ═══════════════════════════════════════════════════════════════════════ */
 
-    const VERSION = '2.0.5';
-    const BUILD_DATE = '2026-06-20';
+    const VERSION = '2.0.6';
+    const BUILD_DATE = '2026-06-28';
     const SCRIPT_NAME = 'CorruptControl';
 
     const Settings = {
@@ -226,7 +226,7 @@ COMPLETE REWRITE - The Definitive Edition
         hidden: false,
         miniMode: false,
         text: 'CC BETA',
-        subtext: 'v2.0.5 — {username}',
+        subtext: 'v2.0.6 — {username}',
         position: 'top-right',
         fontFamily: 'JetBrains Mono',
         customFont: '',
@@ -318,7 +318,7 @@ COMPLETE REWRITE - The Definitive Edition
         enabled: false,
         interval: 30000,
         messages: [
-            { text: 'CorruptControl BETA v2.0.5', emoji: '\uD83D\uDD25' },
+            { text: 'CorruptControl BETA v2.0.6', emoji: '\uD83D\uDD25' },
             { text: 'https://discord.gg/kdasX7hyY8', emoji: '\uD83D\uDC7B' },
             { text: 'Made by @ogunworthy', emoji: '\u2B50' },
             { text: 'IOS DISCORD SB/Menu - 600+ CMDS', emoji: '\u26A1' },
