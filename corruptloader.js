@@ -3208,31 +3208,32 @@ ${state.ghostPings.slice(-10).map((gp, i) => (i + 1) + '. <@' + gp.author + '> â
     }
 
     function initDrag(el) {
+        let moved = false;
+        let startX = 0, startY = 0;
+        const THRESH = 6;
         const start = (cx, cy) => {
             state.dragState.active = true;
             state.dragState.offsetX = cx - el.offsetLeft;
             state.dragState.offsetY = cy - el.offsetTop;
+            startX = cx; startY = cy; moved = false;
             el.style.cursor = 'grabbing';
             el.style.transition = 'none';
         };
         const move = (cx, cy) => {
+            if (!moved && Math.abs(cx - startX) < THRESH && Math.abs(cy - startY) < THRESH) return;
+            moved = true;
             const x = Math.max(4, Math.min(window.innerWidth - el.offsetWidth - 4, cx - state.dragState.offsetX));
             const y = Math.max(4, Math.min(window.innerHeight - el.offsetHeight - 4, cy - state.dragState.offsetY));
             el.style.left = x + 'px'; el.style.top = y + 'px';
             el.style.right = 'auto'; el.style.bottom = 'auto';
         };
         const end = () => {
-            state.dragState.active = false;
+            const wasMoved = moved;
+            setTimeout(() => { state.dragState.active = false; }, 0);
             el.style.cursor = 'grab';
             el.style.transition = '';
-            // Snap to nearest corner
-            const r = el.getBoundingClientRect();
-            const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-            const horiz = cx < window.innerWidth / 2 ? 'left' : 'right';
-            const vert = cy < window.innerHeight / 2 ? 'top' : 'bottom';
-            WatermarkCfg.position = vert + '-' + horiz;
-            Settings.save('watermark', WatermarkCfg);
-            buildWatermark();
+            if (!wasMoved) return; // pure tap â†’ no rebuild, no disappear
+            try { Settings.save('watermark', WatermarkCfg); } catch(_) {}
         };
         el.addEventListener('mousedown', e => { if (e.button !== 0) return; start(e.clientX, e.clientY);
             const mm = ev => move(ev.clientX, ev.clientY);
