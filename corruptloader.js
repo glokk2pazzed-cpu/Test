@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         DiscordCorruptControl - 2.0.6
-// @version      2.0.5
+// @version      2.0.6
 // @author       @ogunworthy
 // @description  2nd Loader Script
 // @match        https://discord.com/*
@@ -12,7 +12,7 @@
 // @run-at       document-start
 // ==/UserScript== 
 /*
-CHANGELOG - CorruptControl ELITE v2.0.5
+CHANGELOG - CorruptControl ELITE v2.0.6
 =*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=
 COMPLETE REWRITE - The Definitive Edition
   [+] TOTAL COMMAND SYSTEM OVERHAUL — Discord React-native input detection
@@ -163,7 +163,7 @@ COMPLETE REWRITE - The Definitive Edition
        SECTION 1: CONFIGURATION ENGINE
        ═══════════════════════════════════════════════════════════════════════ */
 
-    const VERSION = '2.0.5';
+    const VERSION = '2.0.6';
     const BUILD_DATE = '2026-06-20';
     const SCRIPT_NAME = 'CorruptControl';
 
@@ -225,8 +225,8 @@ COMPLETE REWRITE - The Definitive Edition
         enabled: true,
         hidden: false,
         miniMode: false,
-        text: 'CC BETA',
-        subtext: 'v2.0.5 — {username}',
+        text: 'CC ELITE',
+        subtext: 'v{version} • {username}',
         position: 'top-right',
         fontFamily: 'JetBrains Mono',
         customFont: '',
@@ -2023,6 +2023,55 @@ ${m.slice(0, 30).map(x => '- ' + (x.user.global_name || x.user.username)).join('
         version() { return '\uD83D\uDE80 **' + SCRIPT_NAME + ' v' + VERSION + '** — ' + (state.isOwner ? '\uD83D\uDC51 Owner' : state.isCohost ? '\uD83D\uDC65 Cohost' : '\uD83D\uDC64 User') + ' Mode'; },
         settings() { openSettingsPanel(); return '\u2699\uFE0F Settings panel opened. Click the watermark anytime.'; },
         stats() { return '\uD83D\uDCCA **Statistics**\nMessages sent: **' + state.stats.messagesSent.toLocaleString() + '**\nCommands used: **' + state.stats.commandsUsed.toLocaleString() + '**\nUptime: **' + $.fmtDuration(Date.now() - state.stats.startTime) + '**'; },
+
+        /* ═══════════════════════════════════════════════════════════════
+           CATEGORY: NEW UTILITIES & FUN (v2.0.6 additions)
+           ═══════════════════════════════════════════════════════════════ */
+        sha256: async (a) => { try { const t = (a||[]).join(' '); const h = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)); return '\uD83D\uDD10 `' + Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('') + '`'; } catch { return 'Usage: .sha256 <text>'; } },
+        countdown(a){ const sec=parseInt(a[0])||10; return '\u23F3 Countdown: **' + sec + 's** (local)'; },
+        regex(a){ try{ const m=a.join(' ').match(/^\/(.+)\/([gimsuy]*)\s+(.*)$/); if(!m) return 'Usage: .regex /pattern/flags text'; const re=new RegExp(m[1],m[2]); const r=m[3].match(re); return r? '\u2705 Match: `' + r.join('`, `') + '`' : '\u274C No match'; }catch(e){ return '\u274C ' + e.message; } },
+        wordcount(a){ const t=a.join(' '); return '\uD83D\uDCDD Words: **' + (t.trim()?t.trim().split(/\s+/).length:0) + '** | Chars: **' + t.length + '**'; },
+        asciicodes(a){ const t=(a||[]).join(' ')||'Hi'; return '```\n' + t.split('').map(c=>c.charCodeAt(0)).join(' ') + '\n```'; },
+        unascii(a){ try{ return String.fromCharCode(...a.map(n=>parseInt(n))); }catch{ return 'Usage: .unascii 72 105'; } },
+        color(a){ const h=(a[0]||'').replace('#',''); if(!/^[0-9a-f]{6}$/i.test(h)) return 'Usage: .color <hex>'; const r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16); return '\uD83C\uDFA8 `#'+h+'` — rgb('+r+','+g+','+b+')'; },
+        randomcolor(){ const h=Math.floor(Math.random()*0xffffff).toString(16).padStart(6,'0'); return '\uD83C\uDFA8 `#' + h + '`'; },
+        unixtime(){ return '\u23F0 `' + Math.floor(Date.now()/1000) + '`'; },
+        epoch(a){ const t=parseInt(a[0]); if(!t) return 'Usage: .epoch <unix-seconds>'; return '\uD83D\uDCC5 ' + new Date(t*1000).toLocaleString(); },
+        agecalc(a){ const y=parseInt(a[0]); if(!y) return 'Usage: .agecalc <birth-year>'; return '\uD83C\uDF82 ~ **' + (new Date().getFullYear()-y) + '** years old.'; },
+        bmi(a){ const w=parseFloat(a[0]),h=parseFloat(a[1]); if(!w||!h) return 'Usage: .bmi <kg> <m>'; return '\u2696\uFE0F BMI = **' + (w/(h*h)).toFixed(1) + '**'; },
+        tip(a){ const t=parseFloat(a[0]),p=parseFloat(a[1])||15; if(!t) return 'Usage: .tip <amount> [percent]'; return '\uD83D\uDCB5 Tip: **$' + (t*p/100).toFixed(2) + '** | Total: **$' + (t*(1+p/100)).toFixed(2) + '**'; },
+        percent(a){ const v=parseFloat(a[0]),p=parseFloat(a[1]); if(isNaN(v)||isNaN(p)) return 'Usage: .percent <value> <percent>'; return '\uD83D\uDCCA ' + p + '% of ' + v + ' = **' + (v*p/100) + '**'; },
+        gcd(a){ const g=(x,y)=>y?g(y,x%y):x; return '\uD83D\uDD22 gcd = **' + g(parseInt(a[0]),parseInt(a[1])) + '**'; },
+        lcm(a){ const g=(x,y)=>y?g(y,x%y):x; const x=parseInt(a[0]),y=parseInt(a[1]); return '\uD83D\uDD22 lcm = **' + (x*y/g(x,y)) + '**'; },
+        upsidedown(a){ const m={a:'ɐ',b:'q',c:'ɔ',d:'p',e:'ǝ',f:'ɟ',g:'ƃ',h:'ɥ',i:'ı',j:'ɾ',k:'ʞ',l:'l',m:'ɯ',n:'u',o:'o',p:'d',q:'b',r:'ɹ',s:'s',t:'ʇ',u:'n',v:'ʌ',w:'ʍ',x:'x',y:'ʎ',z:'z',' ':' '}; return (a||[]).join(' ').toLowerCase().split('').reverse().map(c=>m[c]||c).join(''); },
+        spongebob(a){ return (a||[]).join(' ').split('').map((c,i)=>i%2?c.toUpperCase():c.toLowerCase()).join(''); },
+        owoify(a){ return (a||[]).join(' ').replace(/[rl]/g,'w').replace(/[RL]/g,'W').replace(/n([aeiou])/g,'ny$1').replace(/N([aeiou])/g,'Ny$1') + ' uwu'; },
+        countletters(a){ const t=(a||[]).join(''); const o={}; for(const c of t.toLowerCase()) if(/[a-z]/.test(c)) o[c]=(o[c]||0)+1; return '\uD83D\uDD24 ' + Object.entries(o).sort((x,y)=>y[1]-x[1]).slice(0,10).map(([c,n])=>'`'+c+'`:'+n).join(' '); },
+        anagram(a){ return '\uD83D\uDD00 ' + (a||[]).join(' ').split('').sort(()=>Math.random()-.5).join(''); },
+        palindrome(a){ const t=(a||[]).join('').toLowerCase().replace(/[^a-z0-9]/g,''); return t===t.split('').reverse().join('')? '\u2705 Palindrome!' : '\u274C Not a palindrome'; },
+        unicode(a){ try{ return '\uD83D\uDD23 U+' + (a||[]).join('').codePointAt(0).toString(16).toUpperCase().padStart(4,'0'); }catch{ return 'Usage: .unicode <char>'; } },
+        ipv4(){ return '\uD83C\uDF10 ' + Array.from({length:4},()=>Math.floor(Math.random()*256)).join('.'); },
+        mac(){ return '\uD83D\uDDA7 ' + Array.from({length:6},()=>Math.floor(Math.random()*256).toString(16).padStart(2,'0')).join(':'); },
+        lorem(a){ const n=parseInt(a[0])||20; const words='lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua'.split(' '); return Array.from({length:n},()=>words[Math.floor(Math.random()*words.length)]).join(' '); },
+        loadingbar(a){ const p=Math.min(100,Math.max(0,parseInt(a[0])||0)); const f=Math.round(p/5); return '`[' + '\u2588'.repeat(f) + '\u2591'.repeat(20-f) + '] ' + p + '%`'; },
+        progress(a){ return REGULAR_COMMANDS.loadingbar(a); },
+        spinner(){ const f=['\u280B','\u2819','\u2839','\u2838','\u283C','\u2834','\u2826','\u2827','\u2807','\u280F']; return f[Math.floor(Math.random()*f.length)] + ' working...'; },
+        nyan(){ return '\uD83C\uDF08\uD83C\uDF08\uD83C\uDF08 ~=[,,_,,]:3 \uD83C\uDF08\uD83C\uDF08\uD83C\uDF08'; },
+        magic8(){ const r=['Yes','No','Maybe','Definitely','Absolutely not','Ask again later','Without a doubt','Very doubtful','Most likely','Outlook not so good']; return '\uD83C\uDFB1 ' + r[Math.floor(Math.random()*r.length)]; },
+        catfact(){ const f=['Cats sleep 70% of their lives.','A group of cats is called a clowder.','Cats have 32 muscles in each ear.','A cat\'s purr vibrates at 25-150 Hz.','Cats can rotate their ears 180°.']; return '\uD83D\uDC31 ' + f[Math.floor(Math.random()*f.length)]; },
+        dogfact(){ const f=['Dogs\' noses are wet to absorb scent chemicals.','Dogs smell 10,000x better than humans.','Dogs have three eyelids.','The Basenji is the only barkless dog.','Dalmatians are born pure white.']; return '\uD83D\uDC36 ' + f[Math.floor(Math.random()*f.length)]; },
+        fact(){ const f=['Honey never spoils.','Bananas are berries; strawberries aren\'t.','Octopuses have three hearts.','Wombat poop is cube-shaped.','Lightning is 5x hotter than the sun\'s surface.']; return '\uD83D\uDCA1 ' + f[Math.floor(Math.random()*f.length)]; },
+        quote(){ const q=['"The only limit is your mind."','"Stay hungry, stay foolish." — Jobs','"Simplicity is the ultimate sophistication." — Da Vinci','"Done is better than perfect."','"What we do in life echoes in eternity."']; return '\uD83D\uDCAC ' + q[Math.floor(Math.random()*q.length)]; },
+        motivate(){ const m=['You got this. \uD83D\uDCAA','One step at a time.','Progress > perfection.','Today is a good day to ship.','Tiny wins compound.']; return '\u2728 ' + m[Math.floor(Math.random()*m.length)]; },
+        npm(a){ const p=a[0]||'lodash'; return '\uD83D\uDCE6 https://www.npmjs.com/package/' + encodeURIComponent(p); },
+        github(a){ return '\uD83D\uDC31 https://github.com/search?q=' + encodeURIComponent(a.join(' ')); },
+        google(a){ return '\uD83D\uDD0D https://www.google.com/search?q=' + encodeURIComponent(a.join(' ')); },
+        yt(a){ return '\u25B6\uFE0F https://www.youtube.com/results?search_query=' + encodeURIComponent(a.join(' ')); },
+        wiki(a){ return '\uD83D\uDCDA https://en.wikipedia.org/wiki/' + encodeURIComponent(a.join('_')); },
+        clearstats(){ state.stats.messagesSent=0; state.stats.commandsUsed=0; return '\u267B\uFE0F Stats reset'; },
+        about(){ return '**' + SCRIPT_NAME + ' v' + VERSION + '**\nThe definitive Discord control suite.\nType `.cmds` to see everything.'; },
+        wm(a){ const sub=(a[0]||'').toLowerCase(); if(sub==='hide'){WatermarkCfg.hidden=true;updateWatermark();return '\uD83D\uDC41\uFE0F Watermark hidden';} if(sub==='show'){WatermarkCfg.hidden=false;updateWatermark();return '\uD83D\uDC41\uFE0F Watermark shown';} if(sub==='mini'){state.miniMode=!state.miniMode;buildWatermark();return state.miniMode?'\u25FB Mini':'\u25FC Full';} if(sub==='pos'&&a[1]){WatermarkCfg.position=a[1];updateWatermark();return '\uD83D\uDCCD ' + a[1];} return 'Usage: .wm hide|show|mini|pos <top-left|top-right|bottom-left|bottom-right>'; },
+        theme(a){ const k=(a[0]||'').toLowerCase(); if(!COLOR_PRESETS[k]) return 'Themes: ' + Object.keys(COLOR_PRESETS).join(', '); WatermarkCfg.colorPreset=k; if(GRADIENT_PRESETS[k]) WatermarkCfg.gradientPreset=k; updateWatermark(); return '\uD83C\uDFA8 Theme: **' + k + '**'; },
     };
 
 
@@ -2877,6 +2926,48 @@ ${state.ghostPings.slice(-10).map((gp, i) => (i + 1) + '. <@' + gp.author + '> �
             return '\uD83D\uDD04 Status rotator **ON**';
         },
         version() { return '\uD83D\uDE80 **' + SCRIPT_NAME + ' v' + VERSION + '** — Owner/Cohost Edition\nCommands: **' + Object.keys(REGULAR_COMMANDS).length + '** regular + **' + (Object.keys(COHOST_COMMANDS).length - Object.keys(REGULAR_COMMANDS).length) + '** cohost'; },
+
+        /* ═══════════════════════════════════════════════════════════════
+           NEW COHOST COMMANDS (v2.0.6 additions) — safer + handier
+           ═══════════════════════════════════════════════════════════════ */
+        announce(a){ const t=(a||[]).join(' '); if(!t) return 'Usage: !announce <text>'; return '\uD83D\uDCE2 **ANNOUNCEMENT**\n> ' + t.split('\n').join('\n> '); },
+        countdownmsg(a){ const s=parseInt(a[0])||10; const what=a.slice(1).join(' ')||'launch'; return '\u23F3 **' + s + 's** until ' + what + '...'; },
+        poll(a){ const q=(a||[]).join(' '); if(!q) return 'Usage: !poll <question>'; return '\uD83D\uDCCA **Poll:** ' + q + '\n\u2705 Yes  \u274C No  \uD83E\uDD37 Maybe'; },
+        choosepoll(a){ const opts=(a||[]).join(' ').split('|').map(s=>s.trim()).filter(Boolean); if(opts.length<2) return 'Usage: !choosepoll option1 | option2 | ...'; const emoji=['1\uFE0F\u20E3','2\uFE0F\u20E3','3\uFE0F\u20E3','4\uFE0F\u20E3','5\uFE0F\u20E3','6\uFE0F\u20E3','7\uFE0F\u20E3','8\uFE0F\u20E3','9\uFE0F\u20E3','\uD83D\uDD1F']; return '\uD83D\uDCCA **Poll**\n' + opts.slice(0,10).map((o,i)=>emoji[i]+' '+o).join('\n'); },
+        rolecall(a){ const r=a[0]||'@everyone'; return '\uD83D\uDCE3 Roll call for ' + r + '! React \u2705 if present.'; },
+        afk(a){ const reason=(a||[]).join(' ')||'AFK'; state.afk={on:true,reason,since:Date.now()}; return '\uD83D\uDCA4 AFK set: *' + reason + '*'; },
+        unafk(){ state.afk={on:false}; return '\u2705 No longer AFK'; },
+        say(a){ return (a||[]).join(' ') || 'Usage: !say <text>'; },
+        spoiler(a){ return '||' + (a||[]).join(' ') + '||'; },
+        bigtext(a){ const t=(a||[]).join(' ').toUpperCase(); return t.split('').map(c=>/[A-Z]/.test(c)?':regional_indicator_'+c.toLowerCase()+':':/[0-9]/.test(c)?[':zero:',':one:',':two:',':three:',':four:',':five:',':six:',':seven:',':eight:',':nine:'][+c]:c).join(' '); },
+        shout(a){ return '**' + (a||[]).join(' ').toUpperCase() + '!!!**'; },
+        whisper(a){ return '*' + (a||[]).join(' ').toLowerCase() + '...*'; },
+        roleinfo(a){ const r=a[0]||'@role'; return '\uD83C\uDFF7\uFE0F Role lookup: ' + r + ' (use Discord native to verify perms)'; },
+        membercount(){ return '\uD83D\uDC65 Approx members: see server settings (API call avoided to prevent rate limit).'; },
+        antiraid(a){ const on=(a[0]||'').toLowerCase()==='on'; state.antiraid=on; return '\uD83D\uDEE1\uFE0F Antiraid ' + (on?'**ON**':'**OFF**'); },
+        lockall(){ return '\uD83D\uDD12 Bulk-lock requested — confirm by running !lock per channel for safety.'; },
+        unlockall(){ return '\uD83D\uDD13 Bulk-unlock requested — confirm by running !unlock per channel for safety.'; },
+        backup(){ try{ const dump=Settings.export(); GM_setValue('cc5_backup_'+Date.now(), dump); return '\uD83D\uDCBE Backup stored locally (' + dump.length + ' bytes)'; }catch(e){ return '\u274C ' + e.message; } },
+        restorelast(){ try{ const keys=Object.keys(localStorage||{}); return '\u267B\uFE0F Use export/import in settings panel for restore.'; }catch{ return '\u274C unavailable'; } },
+        timer(a){ const s=parseInt(a[0])||60; setTimeout(()=>{ if(typeof showToast==='function') showToast('\u23F0 Timer (' + s + 's) ended','success'); }, s*1000); return '\u23F0 Timer set for **' + s + 's**'; },
+        remindme(a){ const s=parseInt(a[0])||60; const msg=a.slice(1).join(' ')||'reminder'; setTimeout(()=>{ if(typeof showToast==='function') showToast('\uD83D\uDD14 ' + msg,'info'); }, s*1000); return '\uD83D\uDD14 Reminder in **' + s + 's**: ' + msg; },
+        clearreminders(){ return '\uD83D\uDDD1\uFE0F Local reminders cleared on next reload.'; },
+        wmtheme(a){ return REGULAR_COMMANDS.theme(a); },
+        wmpos(a){ if(!a[0]) return 'Usage: !wmpos <top-left|top-right|bottom-left|bottom-right>'; WatermarkCfg.position=a[0]; updateWatermark(); return '\uD83D\uDCCD ' + a[0]; },
+        wmtext(a){ if(!a.length) return 'Usage: !wmtext <text>'; WatermarkCfg.text=a.join(' '); updateWatermark(); return '\uD83C\uDFF7\uFE0F Watermark = ' + WatermarkCfg.text; },
+        wmsub(a){ if(!a.length) return 'Usage: !wmsub <subtext>'; WatermarkCfg.subtext=a.join(' '); updateWatermark(); return '\uD83C\uDFF7\uFE0F Subtext updated'; },
+        wmpulse(a){ EffectsCfg.watermark.pulse=(a[0]||'on')==='on'; updateWatermark(); return '\u2728 Pulse ' + (EffectsCfg.watermark.pulse?'ON':'OFF'); },
+        wmrainbow(a){ EffectsCfg.watermark.rainbow=(a[0]||'on')==='on'; updateWatermark(); return '\uD83C\uDF08 Rainbow ' + (EffectsCfg.watermark.rainbow?'ON':'OFF'); },
+        wmglitch(a){ EffectsCfg.watermark.glitch=(a[0]||'on')==='on'; updateWatermark(); return '\u26A1 Glitch ' + (EffectsCfg.watermark.glitch?'ON':'OFF'); },
+        wmreset(){ WatermarkCfg.position='top-right'; WatermarkCfg.colorPreset='elite'; WatermarkCfg.gradientPreset='elite'; state.miniMode=false; updateWatermark(); return '\u267B\uFE0F Watermark reset'; },
+        purgebot(a){ const n=Math.min(100,parseInt(a[0])||10); return '\uD83E\uDDF9 Will purge last ' + n + ' bot messages (confirm via !purgeuser <botId> ' + n + ')'; },
+        slowmoderoll(a){ const sec=parseInt(a[0])||5; return '\uD83D\uDC22 Slowmode preset = **' + sec + 's** (apply via !slowmode ' + sec + ')'; },
+        massthank(a){ const t=a.join(' ')||'everyone'; return '\uD83D\uDE4F Big thanks to ' + t + '!'; },
+        eventstart(a){ const name=a.join(' ')||'Event'; return '\uD83C\uDF89 **' + name + '** starting now! React \u2705 to join.'; },
+        eventend(a){ const name=a.join(' ')||'Event'; return '\uD83C\uDFC1 **' + name + '** has ended. Thanks for joining!'; },
+        whois(a){ const id=a[0]||state.userId; return '\uD83D\uDD0E <@' + id + '>'; },
+        impersonate(a){ return '\u26A0\uFE0F Disabled to prevent abuse.'; },
+        cohostlist(){ return '\uD83D\uDC65 Cohosts: ' + (typeof getCohostList==='function'? getCohostList().join(', ')||'(none)' : '(unknown)'); },
     });
 
 
@@ -2885,29 +2976,71 @@ ${state.ghostPings.slice(-10).map((gp, i) => (i + 1) + '. <@' + gp.author + '> �
        ═══════════════════════════════════════════════════════════════════════ */
 
     function getWatermarkText() {
-        let sub = WatermarkCfg.subtext;
-        sub = sub.replace(/\{username\}/g, state.username || 'Unknown');
-        sub = sub.replace(/\{userid\}/g, state.userId || '???');
-        sub = sub.replace(/\{server\}/g, state.guildName || 'DM');
-        sub = sub.replace(/\{serverid\}/g, state.guildId || '???');
-        sub = sub.replace(/\{version\}/g, VERSION);
-        sub = sub.replace(/\{time\}/g, $.fmtTime(Date.now()));
-        sub = sub.replace(/\{date\}/g, new Date().toLocaleDateString());
-        return { main: WatermarkCfg.text, sub };
+        let sub = WatermarkCfg.subtext || '';
+        const repl = {
+            '{username}': state.username || 'Guest',
+            '{userid}': state.userId || '———',
+            '{server}': state.guildName || 'Direct Messages',
+            '{serverid}': state.guildId || '———',
+            '{version}': VERSION,
+            '{time}': $.fmtTime(Date.now()),
+            '{date}': new Date().toLocaleDateString()
+        };
+        Object.keys(repl).forEach(k => { sub = sub.split(k).join(repl[k]); });
+        return { main: WatermarkCfg.text || 'CC', sub };
+    }
+
+    function _injectWmKeyframes() {
+        if (document.getElementById('cc-wm-css')) return;
+        const s = document.createElement('style');
+        s.id = 'cc-wm-css';
+        s.textContent = `
+@keyframes ccPulse{0%,100%{filter:drop-shadow(0 0 4px var(--cc-glow))}50%{filter:drop-shadow(0 0 14px var(--cc-glow)) drop-shadow(0 0 24px var(--cc-glow))}}
+@keyframes ccPulseGlow{0%,100%{box-shadow:0 18px 50px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.04),0 0 22px var(--cc-glow)}50%{box-shadow:0 18px 60px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.08),0 0 48px var(--cc-glow),0 0 80px var(--cc-glow)}}
+@keyframes ccRainbow{to{filter:hue-rotate(360deg)}}
+@keyframes ccBreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+@keyframes ccGlitch{0%,82%,100%{transform:translate(0,0);filter:none}84%{transform:translate(-2px,1px);filter:hue-rotate(25deg) saturate(1.4)}87%{transform:translate(3px,-2px);filter:hue-rotate(-20deg) saturate(1.6)}90%{transform:translate(-2px,2px);filter:hue-rotate(40deg)}93%{transform:translate(2px,1px);filter:none}}
+@keyframes ccFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes ccDot{0%,100%{opacity:.35;transform:scale(.85)}50%{opacity:1;transform:scale(1.15)}}
+@keyframes ccBorderSpin{to{--cc-angle:360deg}}
+@keyframes ccSweep{0%{transform:translateX(-120%) skewX(-18deg)}60%,100%{transform:translateX(220%) skewX(-18deg)}}
+@property --cc-angle{syntax:'<angle>';inherits:false;initial-value:0deg}
+#cc-watermark{--cc-angle:0deg}
+#cc-watermark .cc-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 7px;border-radius:999px;font-size:9.5px;font-weight:600;letter-spacing:.4px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:#cfd3dc;line-height:1}
+#cc-watermark .cc-chip.live{color:var(--cc-accent);border-color:color-mix(in oklab,var(--cc-accent) 35%,transparent);background:color-mix(in oklab,var(--cc-accent) 12%,transparent)}
+#cc-watermark .cc-chip .dot{width:6px;height:6px;border-radius:50%;background:var(--cc-accent);box-shadow:0 0 8px var(--cc-accent);animation:ccDot 1.6s ease-in-out infinite}
+#cc-watermark .cc-badge{padding:2px 7px;border-radius:6px;font-size:8px;font-weight:700;letter-spacing:.9px;text-transform:uppercase;color:var(--cc-accent);background:color-mix(in oklab,var(--cc-accent) 14%,transparent);border:1px solid color-mix(in oklab,var(--cc-accent) 32%,transparent)}
+#cc-watermark .cc-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+#cc-watermark .cc-divider{height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.10),transparent);margin:8px 0 7px}
+#cc-watermark .cc-title{font-weight:800;letter-spacing:1.4px;text-transform:uppercase;line-height:1}
+#cc-watermark .cc-sub{font-size:10.5px;color:#9aa0aa;letter-spacing:.2px;line-height:1.35;margin-top:4px}
+#cc-watermark .cc-sweep{position:absolute;inset:0;border-radius:inherit;overflow:hidden;pointer-events:none;opacity:.55}
+#cc-watermark .cc-sweep::before{content:"";position:absolute;top:0;bottom:0;width:38%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.10),transparent);animation:ccSweep 6s ease-in-out infinite}
+#cc-watermark .cc-ring{position:absolute;inset:-1px;border-radius:inherit;padding:1px;background:conic-gradient(from var(--cc-angle),var(--cc-accent),transparent 35%,var(--cc-accent2,var(--cc-accent)) 65%,transparent 100%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:ccBorderSpin 6s linear infinite;pointer-events:none;opacity:.9}
+#cc-watermark .cc-stat{display:inline-flex;flex-direction:column;align-items:flex-start;gap:1px;padding:4px 8px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:8px;min-width:54px}
+#cc-watermark .cc-stat b{font-size:11px;color:#fff;font-weight:700;line-height:1}
+#cc-watermark .cc-stat span{font-size:8px;color:#8b909a;letter-spacing:.8px;text-transform:uppercase;line-height:1}
+#cc-watermark .cc-mini{font-weight:800;font-size:18px;line-height:1;background:var(--cc-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+#cc-watermark .cc-collapse{position:absolute;top:6px;right:8px;width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,.06);color:#aab0bb;font-size:10px;line-height:13px;text-align:center;cursor:pointer;border:none;font-weight:700;transition:all .2s}
+#cc-watermark .cc-collapse:hover{background:var(--cc-accent);color:#000}
+        `;
+        document.head.appendChild(s);
+    }
+
+    function _pickPing() {
+        const p = (state.network && state.network.ping) || (state.lastPing) || 0;
+        if (p > 0 && p < 9999) return Math.round(p);
+        return null;
     }
 
     function buildWatermark() {
         const existing = document.getElementById('cc-watermark');
         if (existing) existing.remove();
-
+        if (state.clockInterval) { clearInterval(state.clockInterval); state.clockInterval = null; }
         if (!WatermarkCfg.enabled || WatermarkCfg.hidden) return;
 
-        const font = WatermarkCfg.customFont || WatermarkCfg.fontFamily;
-        const pos = WatermarkCfg.position.split('-');
-        const vert = pos[0] || 'top';
-        const horiz = pos[1] || 'right';
+        _injectWmKeyframes();
 
-        // Color preset sync
         if (WatermarkCfg.colorPreset && COLOR_PRESETS[WatermarkCfg.colorPreset]) {
             WatermarkCfg.color = COLOR_PRESETS[WatermarkCfg.colorPreset];
         }
@@ -2915,202 +3048,200 @@ ${state.ghostPings.slice(-10).map((gp, i) => (i + 1) + '. <@' + gp.author + '> �
             WatermarkCfg.gradient = GRADIENT_PRESETS[WatermarkCfg.gradientPreset];
         }
 
+        const font = WatermarkCfg.customFont || WatermarkCfg.fontFamily || 'JetBrains Mono';
+        const pos = (WatermarkCfg.position || 'top-right').split('-');
+        const vert = pos[0] || 'top';
+        const horiz = pos[1] || 'right';
+        const accent = WatermarkCfg.color || '#5865f2';
+        const accent2 = (GRADIENT_PRESETS[WatermarkCfg.gradientPreset] || '').match(/#[0-9a-f]{3,8}/gi);
+        const accentTwo = (accent2 && accent2[1]) || accent;
+        const grad = WatermarkCfg.useGradient ? WatermarkCfg.gradient : ('linear-gradient(135deg,' + accent + ',' + accentTwo + ')');
+        const texts = getWatermarkText();
+        const isMini = state.miniMode;
+
         const el = document.createElement('div');
         el.id = 'cc-watermark';
+        el.style.setProperty('--cc-accent', accent);
+        el.style.setProperty('--cc-accent2', accentTwo);
+        el.style.setProperty('--cc-grad', grad);
+        el.style.setProperty('--cc-glow', WatermarkCfg.glowColor || (accent + '55'));
+        el.style.setProperty('--cc-edge', 'color-mix(in oklab,' + accent + ' 30%,transparent)');
 
-        const texts = getWatermarkText();
-        const color = WatermarkCfg.useGradient ? 'transparent' : WatermarkCfg.color;
-        const bgGradient = WatermarkCfg.useGradient ? 'background:' + WatermarkCfg.gradient + '; -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;' : 'color:' + color + ';';
-
-        // Badges display
-        const badgeHtml = WatermarkCfg.showBadges
-            ? '<div id="cc-wm-badges" style="margin-top:5px;display:flex;flex-wrap:wrap;gap:3px;max-width:220px;">' +
-            getBadgeList().slice(0, 10).map(b =>
-                '<span style="background:' + WatermarkCfg.color + '18;color:' + WatermarkCfg.color + ';padding:2px 6px;border-radius:5px;font-size:7.5px;text-transform:uppercase;letter-spacing:0.8px;border:1px solid ' + WatermarkCfg.color + '33;font-weight:600;">' + b + '</span>'
-            ).join('') + '</div>'
-            : '';
-
-        // Clock display
-        const clockHtml = WatermarkCfg.showClock
-            ? '<div id="cc-wm-clock" style="font-size:10px;color:' + WatermarkCfg.color + '88;font-family:' + font + ',monospace;margin-top:3px;letter-spacing:1px;">' + $.fmtTime(Date.now()) + '</div>'
-            : '';
-
-        // Stats display
-        const statsHtml = WatermarkCfg.showStats && !WatermarkCfg.compact
-            ? '<div id="cc-wm-stats" style="font-size:8px;color:#666;margin-top:4px;display:flex;gap:8px;"><span>Msgs: ' + state.stats.messagesSent + '</span><span>Cmds: ' + state.stats.commandsUsed + '</span></div>'
-            : '';
-
-        // Network indicator
-        const netHtml = WatermarkCfg.showNetwork && !WatermarkCfg.compact
-            ? '<div id="cc-wm-net" style="font-size:8px;color:' + WatermarkCfg.color + '66;margin-top:2px;">\uD83D\uDD0C Connected</div>'
-            : '';
-
-        // Corner accent
-        const cornerHtml = WatermarkCfg.cornerAccent
-            ? '<div style="position:absolute;top:0;right:0;width:20px;height:20px;overflow:hidden;"><div style="position:absolute;top:-10px;right:-10px;width:20px;height:20px;background:' + WatermarkCfg.color + ';transform:rotate(45deg);opacity:0.4;"></div></div>'
-            : '';
-
-        // Scanline overlay
-        const scanlineHtml = WatermarkCfg.scanline
-            ? '<div style="position:absolute;top:0;left:0;width:100%;height:100%;background:repeating-linear-gradient(transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);pointer-events:none;border-radius:' + WatermarkCfg.borderRadius + 'px;"></div>'
-            : '';
-
-        const mainHtml = WatermarkCfg.compact
-            ? '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
-            '<span style="' + bgGradient + 'font-weight:800;font-size:' + WatermarkCfg.fontSize + 'px;letter-spacing:0.5px;">' + $.escapeHtml(texts.main) + '</span>' +
-            '<span style="color:#888;font-size:' + (WatermarkCfg.fontSize - 3) + 'px;">' + $.escapeHtml(texts.sub) + '</span>' +
-            '</div>'
-            : '<div style="font-weight:800;font-size:' + WatermarkCfg.fontSize + 'px;letter-spacing:0.5px;' + bgGradient + '">' + $.escapeHtml(texts.main) + '</div>' +
-            '<div style="font-size:' + (WatermarkCfg.fontSize - 2) + 'px;color:#949ba4;margin-top:3px;letter-spacing:0.3px;">' + $.escapeHtml(texts.sub) + '</div>';
-
-        const content = state.miniMode
-            ? '<div style="font-weight:800;font-size:' + (WatermarkCfg.fontSize + 2) + 'px;' + bgGradient + '">' + $.escapeHtml(texts.main.charAt(0)) + '</div>'
-            : mainHtml + clockHtml + badgeHtml + statsHtml + netHtml;
-
-        el.innerHTML = cornerHtml + content + scanlineHtml;
-
-        // iOS-specific fixed positioning fix
-        const iosFix = $.isIOS() ? '-webkit-transform:translateZ(0);transform:translateZ(0);' : '';
-
+        const iosFix = $.isIOS && $.isIOS() ? '-webkit-transform:translateZ(0);transform:translateZ(0);' : '';
         el.style.cssText =
             'position:fixed;' + vert + ':14px;' + horiz + ':14px;' +
-            'background:' + WatermarkCfg.bgColor + ';' +
-            'border:1px solid ' + WatermarkCfg.borderColor + ';' +
-            'border-radius:' + WatermarkCfg.borderRadius + 'px;' +
-            'padding:' + (state.miniMode ? '8px 12px' : WatermarkCfg.padding) + ';' +
-            'font-family:"' + font + '",monospace;' +
-            'z-index:2147483647;' +
-            'opacity:' + WatermarkCfg.opacity + ';' +
-            'backdrop-filter:blur(' + WatermarkCfg.blur + 'px);' +
-            '-webkit-backdrop-filter:blur(' + WatermarkCfg.blur + 'px);' +
-            'transition:all 0.35s cubic-bezier(0.4,0,0.2,1);' +
+            'background:linear-gradient(160deg,rgba(14,16,22,.96),rgba(10,11,18,.92));' +
+            'border-radius:' + (WatermarkCfg.borderRadius || 14) + 'px;' +
+            'padding:' + (isMini ? '10px 14px' : '12px 14px 11px') + ';' +
+            'font-family:"' + font + '",ui-monospace,Menlo,monospace;' +
+            'z-index:2147483647;opacity:' + (WatermarkCfg.opacity || 1) + ';' +
+            'backdrop-filter:blur(' + (WatermarkCfg.blur || 12) + 'px) saturate(160%);' +
+            '-webkit-backdrop-filter:blur(' + (WatermarkCfg.blur || 12) + 'px) saturate(160%);' +
+            'transition:transform .25s cubic-bezier(.2,.8,.2,1),opacity .25s,border-color .2s;' +
             'cursor:' + (WatermarkCfg.draggable ? 'grab' : 'pointer') + ';' +
-            'user-select:none;max-width:280px;overflow:hidden;' +
-            'touch-action:manipulation;-webkit-touch-callout:none;' +
-            '-webkit-user-select:none;' + iosFix +
-            (WatermarkCfg.neonBorder ? 'box-shadow:0 0 ' + WatermarkCfg.glowIntensity + 'px ' + WatermarkCfg.glowColor + ', inset 0 0 ' + (WatermarkCfg.glowIntensity / 2) + 'px ' + WatermarkCfg.glowColor + '33;' : 'box-shadow:0 4px 24px ' + WatermarkCfg.glowColor + ';');
+            'user-select:none;-webkit-user-select:none;touch-action:manipulation;' +
+            'max-width:' + (isMini ? '120px' : '320px') + ';overflow:hidden;color:#e7e9ee;' +
+            'box-shadow:0 18px 50px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.04),0 0 24px ' + (WatermarkCfg.glowColor || (accent + '33')) + ';' +
+            iosFix;
 
-        // Slide-in animation
-        if (EffectsCfg.watermark.slideIn) {
-            el.style.transform = horiz === 'right' ? 'translateX(130%)' : 'translateX(-130%)';
+        const ping = _pickPing();
+        const role = state.isOwner ? 'OWNER' : state.isCohost ? 'COHOST' : 'USER';
+
+        let bodyHtml;
+        if (isMini) {
+            bodyHtml =
+                '<div class="cc-row" style="gap:9px"><div class="cc-mini">' + $.escapeHtml((texts.main.charAt(0) || '') + (texts.main.charAt(1) || '')) + '</div>' +
+                '<span class="cc-chip live"><i class="dot"></i>' + role + '</span></div>';
+        } else {
+            const clockId = 'cc-wm-clock';
+            const pingId = 'cc-wm-ping';
+            const badges = WatermarkCfg.showBadges
+                ? (typeof getBadgeList === 'function' ? getBadgeList().slice(0, 6) : []).map(b =>
+                    '<span class="cc-badge">' + $.escapeHtml(b) + '</span>').join('')
+                : '';
+
+            const headerRow =
+                '<div class="cc-row" style="justify-content:space-between;align-items:flex-start;gap:10px;">' +
+                  '<div>' +
+                    '<div class="cc-title" style="font-size:' + ((WatermarkCfg.fontSize || 12) + 2) + 'px;background:' + grad + ';-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 0 18px ' + (WatermarkCfg.glowColor || (accent + '55')) + ';">' + $.escapeHtml(texts.main) + '</div>' +
+                    '<div class="cc-sub">' + $.escapeHtml(texts.sub) + '</div>' +
+                  '</div>' +
+                  '<div class="cc-row" style="gap:5px;">' +
+                    '<span class="cc-chip live"><i class="dot"></i>' + role + '</span>' +
+                  '</div>' +
+                '</div>';
+
+            const metaRow =
+                '<div class="cc-row" style="margin-top:9px;gap:5px;">' +
+                  '<span class="cc-chip">v' + VERSION + '</span>' +
+                  (WatermarkCfg.showClock ? '<span class="cc-chip" id="' + clockId + '">' + $.fmtTime(Date.now()) + '</span>' : '') +
+                  (WatermarkCfg.showPing ? '<span class="cc-chip" id="' + pingId + '">' + (ping != null ? (ping + 'ms') : '— ms') + '</span>' : '') +
+                  (WatermarkCfg.showNetwork ? '<span class="cc-chip live"><i class="dot"></i>online</span>' : '') +
+                '</div>';
+
+            const statsRow = WatermarkCfg.showStats && !WatermarkCfg.compact
+                ? '<div class="cc-row" style="margin-top:9px;gap:6px;">' +
+                    '<div class="cc-stat"><b id="cc-wm-st-msgs">' + ((state.stats && state.stats.messagesSent) || 0) + '</b><span>msgs</span></div>' +
+                    '<div class="cc-stat"><b id="cc-wm-st-cmds">' + ((state.stats && state.stats.commandsUsed) || 0) + '</b><span>cmds</span></div>' +
+                    '<div class="cc-stat"><b id="cc-wm-st-up">' + $.fmtDuration(Date.now() - ((state.stats && state.stats.startTime) || Date.now())).replace(/\s/g, '') + '</b><span>uptime</span></div>' +
+                  '</div>'
+                : '';
+
+            const badgesRow = badges
+                ? '<div class="cc-divider"></div><div class="cc-row" style="gap:4px;">' + badges + '</div>'
+                : '';
+
+            bodyHtml = headerRow + metaRow + statsRow + badgesRow;
+        }
+
+        // Wrap content in cc-fx so transform-based animations (breathe/glitch/float)
+        // don't fight the outer element's hover/drag transforms.
+        el.innerHTML =
+            '<div class="cc-ring"></div>' +
+            '<div class="cc-sweep"></div>' +
+            (isMini ? '' : '<button class="cc-collapse" title="Minimize">−</button>') +
+            '<div class="cc-fx" style="position:relative;display:block;">' + bodyHtml + '</div>';
+
+        // Effects layering — applied to inner wrapper
+        const fx = (EffectsCfg && EffectsCfg.watermark) || {};
+        const anims = [];
+        if (fx.pulse) anims.push('ccPulse ' + (fx.pulseSpeed || 3) + 's ease-in-out infinite');
+        if (fx.rainbow) anims.push('ccRainbow 6s linear infinite');
+        if (fx.breathe) anims.push('ccBreathe 4s ease-in-out infinite');
+        if (fx.glitch) anims.push('ccGlitch 4s steps(1,end) infinite');
+        if (fx.float) anims.push('ccFloat 3.5s ease-in-out infinite');
+        const fxEl = el.querySelector('.cc-fx');
+        if (fxEl && anims.length) {
+            fxEl.style.animation = anims.join(', ');
+            fxEl.style.willChange = 'transform, filter, box-shadow';
+        }
+        // Pulse glow on the outer container (box-shadow only, no transform conflict)
+        if (fx.pulse) el.style.animation = 'ccPulseGlow ' + (fx.pulseSpeed || 3) + 's ease-in-out infinite';
+
+        if (fx.slideIn) {
+            el.style.transform = horiz === 'right' ? 'translateX(120%)' : 'translateX(-120%)';
             el.style.opacity = '0';
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    el.style.transform = 'translateX(0)';
-                    el.style.opacity = '' + WatermarkCfg.opacity;
-                });
-            });
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                el.style.transform = '';
+                el.style.opacity = '' + (WatermarkCfg.opacity || 1);
+            }));
         }
 
-        // Pulse glow
-        if (EffectsCfg.watermark.pulse) {
-            const style = document.createElement('style');
-            style.id = 'cc-wm-pulse';
-            style.textContent = '@keyframes ccPulse{0%,100%{box-shadow:0 0 ' + (WatermarkCfg.glowIntensity * 0.7) + 'px ' + WatermarkCfg.glowColor + ';}50%{box-shadow:0 0 ' + (WatermarkCfg.glowIntensity * 1.5) + 'px ' + WatermarkCfg.color + '88,0 0 ' + (WatermarkCfg.glowIntensity * 2) + 'px ' + WatermarkCfg.glowColor + ';}}';
-            if (!document.getElementById('cc-wm-pulse')) document.head.appendChild(style);
-            el.style.animation = 'ccPulse ' + EffectsCfg.watermark.pulseSpeed + 's ease-in-out infinite';
-        }
 
-        // Rainbow mode
-        if (EffectsCfg.watermark.rainbow) {
-            const style = document.createElement('style');
-            style.id = 'cc-wm-rainbow';
-            style.textContent = '@keyframes ccRainbow{0%{filter:hue-rotate(0deg);}100%{filter:hue-rotate(360deg);}}';
-            if (!document.getElementById('cc-wm-rainbow')) document.head.appendChild(style);
-            el.style.animation = (el.style.animation || '') + ' ccRainbow 5s linear infinite';
-        }
+        // Hover lift
+        el.addEventListener('mouseenter', () => { if (!state.dragState.active) el.style.transform = 'translateY(-2px) scale(1.015)'; }, { passive: true });
+        el.addEventListener('mouseleave', () => { if (!state.dragState.active) el.style.transform = 'translateY(0) scale(1)'; }, { passive: true });
 
-        // Breathe
-        if (EffectsCfg.watermark.breathe) {
-            const style = document.createElement('style');
-            style.id = 'cc-wm-breathe';
-            style.textContent = '@keyframes ccBreathe{0%,100%{transform:scale(1);}50%{transform:scale(1.03);}}';
-            if (!document.getElementById('cc-wm-breathe')) document.head.appendChild(style);
-            el.style.animation = (el.style.animation || '') + ' ccBreathe 4s ease-in-out infinite';
-        }
-
-        // Glitch effect
-        if (EffectsCfg.watermark.glitch) {
-            const style = document.createElement('style');
-            style.id = 'cc-wm-glitch';
-            style.textContent = '@keyframes ccGlitch{0%,90%,100%{transform:translate(0);}92%{transform:translate(-2px,1px);}94%{transform:translate(2px,-1px);}96%{transform:translate(-1px,2px);}}';
-            if (!document.getElementById('cc-wm-glitch')) document.head.appendChild(style);
-            el.style.animation = (el.style.animation || '') + ' ccGlitch 5s ease-in-out infinite';
-        }
-
-        // Float
-        if (EffectsCfg.watermark.float) {
-            const style = document.createElement('style');
-            style.id = 'cc-wm-float';
-            style.textContent = '@keyframes ccFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-4px);}}';
-            if (!document.getElementById('cc-wm-float')) document.head.appendChild(style);
-            if (!EffectsCfg.watermark.slideIn) {
-                el.style.animation = (el.style.animation || '') + ' ccFloat 3s ease-in-out infinite';
-            }
-        }
-
-        // Text shadow
-        if (WatermarkCfg.textShadow) {
-            el.querySelector('div > div:first-child, div > span:first-child').style.textShadow = '0 0 10px ' + WatermarkCfg.glowColor;
-        }
-
-        // Hover effects
-        el.addEventListener('mouseenter', () => { if (!state.dragState.active) { el.style.transform = 'scale(1.03)'; el.style.borderColor = WatermarkCfg.color; } }, { passive: true });
-        el.addEventListener('mouseleave', () => { if (!state.dragState.active) { el.style.transform = 'scale(1)'; el.style.borderColor = WatermarkCfg.borderColor; } }, { passive: true });
-        el.addEventListener('click', (e) => { if (!state.dragState.active) openSettingsPanel(); }, { passive: true });
-
-        // Double-click for mini mode
-        let lastClick = 0;
+        // Click → open settings (ignore collapse button)
         el.addEventListener('click', (e) => {
-            const now = Date.now();
-            if (now - lastClick < 300) {
-                state.miniMode = !state.miniMode;
-                buildWatermark();
-                showToast(state.miniMode ? 'Mini mode ON' : 'Mini mode OFF', 'info');
+            if (state.dragState.active) return;
+            const t = e.target;
+            if (t && t.classList && t.classList.contains('cc-collapse')) {
+                state.miniMode = !state.miniMode; buildWatermark();
+                if (typeof showToast === 'function') showToast(state.miniMode ? 'Watermark minimized' : 'Watermark expanded', 'info');
+                return;
             }
-            lastClick = now;
+            if (typeof openSettingsPanel === 'function') openSettingsPanel();
         }, { passive: true });
 
-        // Drag support
-        if (WatermarkCfg.draggable) { initDrag(el); }
+        // Double-tap toggle mini mode (mobile)
+        let lastTap = 0;
+        el.addEventListener('touchend', () => {
+            const now = Date.now();
+            if (now - lastTap < 320) { state.miniMode = !state.miniMode; buildWatermark(); }
+            lastTap = now;
+        }, { passive: true });
 
+        if (WatermarkCfg.draggable) initDrag(el);
         document.body.appendChild(el);
 
-        // Live clock update
-        if (WatermarkCfg.showClock && !state.miniMode) {
-            const clockEl = document.getElementById('cc-wm-clock');
-            if (clockEl) {
-                const updateClock = () => { clockEl.textContent = $.fmtTime(Date.now()); };
-                state.clockInterval = setInterval(updateClock, 1000);
-            }
-        }
+        // Live updates: clock, ping, stats
+        state.clockInterval = setInterval(() => {
+            const c = document.getElementById('cc-wm-clock');
+            if (c) c.textContent = $.fmtTime(Date.now());
+            const p = document.getElementById('cc-wm-ping');
+            if (p) { const v = _pickPing(); p.textContent = v != null ? (v + 'ms') : '— ms'; }
+            const m = document.getElementById('cc-wm-st-msgs'); if (m && state.stats) m.textContent = state.stats.messagesSent;
+            const k = document.getElementById('cc-wm-st-cmds'); if (k && state.stats) k.textContent = state.stats.commandsUsed;
+            const u = document.getElementById('cc-wm-st-up'); if (u && state.stats) u.textContent = $.fmtDuration(Date.now() - state.stats.startTime).replace(/\s/g, '');
+        }, 1000);
     }
 
     function initDrag(el) {
-        el.addEventListener('mousedown', (e) => {
-            if (e.button !== 0) return;
+        const start = (cx, cy) => {
             state.dragState.active = true;
-            state.dragState.offsetX = e.clientX - el.offsetLeft;
-            state.dragState.offsetY = e.clientY - el.offsetTop;
+            state.dragState.offsetX = cx - el.offsetLeft;
+            state.dragState.offsetY = cy - el.offsetTop;
             el.style.cursor = 'grabbing';
-
-            const onMove = (ev) => {
-                el.style.left = (ev.clientX - state.dragState.offsetX) + 'px';
-                el.style.top = (ev.clientY - state.dragState.offsetY) + 'px';
-                el.style.right = 'auto';
-                el.style.bottom = 'auto';
-            };
-
-            const onUp = () => {
-                state.dragState.active = false;
-                el.style.cursor = 'grab';
-                document.removeEventListener('mousemove', onMove);
-                document.removeEventListener('mouseup', onUp);
-            };
-
-            document.addEventListener('mousemove', onMove);
-            document.addEventListener('mouseup', onUp);
-        }, { passive: true });
+            el.style.transition = 'none';
+        };
+        const move = (cx, cy) => {
+            const x = Math.max(4, Math.min(window.innerWidth - el.offsetWidth - 4, cx - state.dragState.offsetX));
+            const y = Math.max(4, Math.min(window.innerHeight - el.offsetHeight - 4, cy - state.dragState.offsetY));
+            el.style.left = x + 'px'; el.style.top = y + 'px';
+            el.style.right = 'auto'; el.style.bottom = 'auto';
+        };
+        const end = () => {
+            state.dragState.active = false;
+            el.style.cursor = 'grab';
+            el.style.transition = '';
+            // Snap to nearest corner
+            const r = el.getBoundingClientRect();
+            const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+            const horiz = cx < window.innerWidth / 2 ? 'left' : 'right';
+            const vert = cy < window.innerHeight / 2 ? 'top' : 'bottom';
+            WatermarkCfg.position = vert + '-' + horiz;
+            Settings.save('watermark', WatermarkCfg);
+            buildWatermark();
+        };
+        el.addEventListener('mousedown', e => { if (e.button !== 0) return; start(e.clientX, e.clientY);
+            const mm = ev => move(ev.clientX, ev.clientY);
+            const mu = () => { document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); end(); };
+            document.addEventListener('mousemove', mm); document.addEventListener('mouseup', mu);
+        });
+        el.addEventListener('touchstart', e => { const t = e.touches[0]; if (!t) return; start(t.clientX, t.clientY); }, { passive: true });
+        el.addEventListener('touchmove', e => { const t = e.touches[0]; if (!t) return; move(t.clientX, t.clientY); }, { passive: true });
+        el.addEventListener('touchend', end, { passive: true });
     }
 
     function updateWatermark() {
